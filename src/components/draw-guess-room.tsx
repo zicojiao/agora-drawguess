@@ -11,6 +11,7 @@ import { countdownCue, GameAudio } from '#/lib/game/game-audio'
 import { voiceControlCopy, type VoiceControlState } from '#/lib/game/voice-control'
 import { connectAgoraSession, loadAgoraSessionDependencies, type ConnectedAgoraSession } from '#/lib/agora/session'
 import { createReactorSession, readReactorApiKey, reactorRuntimeCredentialError, reactorSessionErrorMessage, type ReactorSession } from '#/lib/reactor-session'
+import { startVideoLoopRecording, type VideoLoopRecording } from '#/lib/video-loop'
 
 type ProofState = { attemptId: string; verifyNonce: string; prompt?: string; status: string; visionMs?: number; startedAt?: number } | null
 type GameSettings = { rounds: number; seconds: number }
@@ -41,22 +42,76 @@ function roomPlayerStatus(player: PublicGameRoom['players'][number], artistId?: 
   return player.id === artistId ? 'Drawing now' : 'Guessing'
 }
 
-function SharedFastH3Video({ track, active }: { track: MediaStreamTrack | null; active: boolean }) {
+function SharedFastH3Video({ track, active, freeze }: { track: MediaStreamTrack | null; active: boolean; freeze: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const recordingRef = useRef<VideoLoopRecording | null>(null)
+  const [posterFrame, setPosterFrame] = useState<string | null>(null)
+  const [loopUrl, setLoopUrl] = useState<string | null>(null)
+  const activeRef = useRef(active)
+  activeRef.current = active
 
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
+    recordingRef.current?.cancel()
+    recordingRef.current = null
+    setPosterFrame(null)
+    setLoopUrl((current) => { if (current) URL.revokeObjectURL(current); return null })
     video.srcObject = track ? new MediaStream([track]) : null
     if (track) void video.play().catch(() => undefined)
-    return () => { video.srcObject = null }
+    if (!track) return () => { video.srcObject = null }
+    const canvas = document.createElement('canvas')
+    canvas.width = 640
+    canvas.height = 360
+    const context = canvas.getContext('2d', { willReadFrequently: true })
+    const rememberVisibleFrame = () => {
+      if (!context || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return
+      try {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height)
+        const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data
+        let visible = 0
+        let sampled = 0
+        for (let index = 0; index < pixels.length; index += 400) {
+          sampled += 1
+          if (pixels[index] + pixels[index + 1] + pixels[index + 2] > 24) visible += 1
+        }
+        if (visible > sampled * .01) {
+          setPosterFrame(canvas.toDataURL('image/jpeg', .76))
+          if (activeRef.current && !recordingRef.current) recordingRef.current = startVideoLoopRecording(track)
+        }
+      } catch {
+        // Keep the last valid frame if the MediaStream is between clip states.
+      }
+    }
+    const timer = window.setInterval(rememberVisibleFrame, 500)
+    return () => { window.clearInterval(timer); recordingRef.current?.cancel(); recordingRef.current = null; video.srcObject = null }
   }, [track])
+
+  useEffect(() => {
+    if (!freeze) return
+    const recording = recordingRef.current
+    recordingRef.current = null
+    if (!recording) return
+    void recording.stop().then((blob) => {
+      if (!blob) return
+      setLoopUrl((current) => {
+        if (current) URL.revokeObjectURL(current)
+        return URL.createObjectURL(blob)
+      })
+    })
+  }, [freeze])
+
+  useEffect(() => () => {
+    recordingRef.current?.cancel()
+    if (loopUrl) URL.revokeObjectURL(loopUrl)
+  }, [loopUrl])
 
   return (
     <div className={`dg-proof dg-proof--shared ${active ? 'is-active' : 'is-idle'}`}>
       <div className="dg-proof__stage">
         <span className="dg-proof__scan" />
         {track ? <video ref={videoRef} autoPlay muted playsInline /> : <div className="dg-proof__waiting">Linking host video…</div>}
+        {freeze && (loopUrl ? <video className="dg-proof__loop" src={loopUrl} autoPlay loop muted playsInline /> : posterFrame && <img className="dg-proof__poster" src={posterFrame} alt="Last frame from the shared FastH3 proof" />)}
         <span className="dg-proof__live-badge">AGORA RTC · ROOM LIVE</span>
       </div>
       <small><i />{track ? 'The same FastH3 video is live for every player' : 'Waiting for the host’s FastH3 stream…'}</small>
@@ -461,7 +516,7 @@ export function DrawGuessRoom({ roomId }: { roomId: string }) {
 
   const verifyVideo = async (frames: string[], generationMs: number) => {
     if (!proof?.attemptId || !proof.verifyNonce) return
-    setProofNote('OpenAI is checking three frames…')
+    setProofNote('Checking whether the video proves the guess…')
     try {
       const response = await fetch(`/api/game/rooms/${roomId}/verify-proof`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ seatToken: readRoomSeat(seatKey), attemptId: proof.attemptId, verifyNonce: proof.verifyNonce, frames, generationMs }) })
       const result = await response.json() as { accepted?: boolean; won?: boolean; error?: string }
@@ -493,7 +548,7 @@ export function DrawGuessRoom({ roomId }: { roomId: string }) {
   const sortedPlayers = useMemo(() => [...(room?.players ?? [])].sort((a, b) => b.score - a.score), [room?.players])
   const hintsRevealed = room?.phase === 'drawing' && !isArtist ? (room.round?.wordHint.match(/[\p{L}\p{N}]/gu)?.length ?? 0) : 0
   const aiElapsedMs = room?.aiActivity && ['generating', 'verifying'].includes(room.aiPhase) ? Math.max(0, now - room.aiActivity.startedAt) : null
-  const aiStage = isHost && room?.aiEnabled && !aiSession ? 'WARMING UP FASTH3' : room?.aiPhase === 'thinking' ? 'VISION IS THINKING' : room?.aiPhase === 'generating' ? 'FASTH3 IS GENERATING' : room?.aiPhase === 'verifying' ? 'VERIFYING 3 FRAMES' : room?.aiPhase === 'watching' ? 'SCANNING THE BOARD' : room?.aiPhase === 'verified' ? 'PROOF VERIFIED' : room?.aiPhase === 'failed' ? 'GENERATION OFFLINE' : 'AI CHALLENGER'
+  const aiStage = isHost && room?.aiEnabled && !aiSession ? 'WARMING UP FASTH3' : room?.aiPhase === 'thinking' ? 'VISION IS THINKING' : room?.aiPhase === 'generating' ? 'FASTH3 IS GENERATING' : room?.aiPhase === 'verifying' ? 'CHECKING VIDEO PROOF' : room?.aiPhase === 'watching' ? 'SCANNING THE BOARD' : room?.aiPhase === 'verified' ? 'PROOF VERIFIED' : room?.aiPhase === 'failed' ? 'GENERATION OFFLINE' : 'AI CHALLENGER'
   const aiVideoActive = Boolean(room?.aiActivity && ['generating', 'verifying', 'verified'].includes(room.aiPhase))
   const voiceControl = voiceControlCopy(voiceState, Boolean(room?.agora))
   const whiteboardStatus = !room?.whiteboard
@@ -654,7 +709,7 @@ export function DrawGuessRoom({ roomId }: { roomId: string }) {
             {room.phase === 'result' && <div className={`dg-result-overlay ${resultTimedOut || resultInterrupted ? 'is-timeout' : ''}`}><span>{resultInterrupted ? '↗ ARTIST LEFT' : resultTimedOut ? '⌛ ROUND OVER' : room.round?.winnerType === 'ai' ? '✦ AI VERIFIED' : '✓ CORRECT GUESS'}</span><h2>{resultInterrupted ? 'TURN SKIPPED' : resultTimedOut ? 'TIME’S UP!' : `${playerName(room, room.round?.winnerId ?? null)} wins!`}</h2><p>{resultInterrupted ? 'The artist disconnected, so nobody scores this turn.' : <>The word was <strong>{room.round?.secretWord}</strong>.</>}</p>{isHost ? <button className="dg-button dg-button--yellow" disabled={nextTurnPending} onClick={() => void nextTurn()}>{nextTurnPending ? 'Loading scores…' : (room.round?.number ?? 0) >= room.roundsTotal ? 'See final scores' : 'Next turn →'}</button> : <small>Next turn starts automatically…</small>}</div>}
             {waitingForPlayers && <div className="dg-player-shortage" role="status" aria-live="assertive"><span className="dg-eyebrow">GAME PAUSED</span><h2>Waiting for a player.</h2><p>The timer is safe. The game continues when two humans are back.</p><strong>{waitingSeconds}s</strong></div>}
           </section>
-          <aside className="dg-panel dg-chat-panel"><div className="dg-panel-title"><span>GUESSES</span><strong>{room.messages.length}</strong></div><div className="dg-chat-log">{room.messages.length === 0 && <p className="dg-empty">No guesses yet. Watch the drawing!</p>}{room.messages.map((message) => <div className={`dg-chat-message is-${message.correctness}`} key={message.id}><strong>{message.source === 'ai' ? '✦ FastH3' : playerName(room, message.playerId)}</strong><span>{message.content}</span>{message.correctness === 'close' && <em>Close!</em>}</div>)}</div>{room.aiEnabled && room.phase === 'drawing' ? <aside className={`dg-ai-race dg-ai-race--sidebar is-${room.aiPhase}`} aria-live="polite"><div className="dg-ai-race__head"><span className="dg-ai-race__orb">✦</span><div><b>FASTH3 · SHARED LIVE</b><strong>{waitingForPlayers ? 'PAUSED FOR PLAYERS' : aiStage}</strong></div>{aiElapsedMs !== null && <time><small>TOTAL</small>{(aiElapsedMs / 1000).toFixed(1)}s</time>}</div>{room.aiActivity && <div className="dg-ai-race__candidate"><span>CURRENT IDEA · EVERY PLAYER</span><strong>“{room.aiActivity.guess}”</strong><small>{Math.round(room.aiActivity.confidence * 100)}% confidence · {room.aiActivity.reason}</small></div>}<div className="dg-ai-race__track"><i /></div>{room.aiActivity && <div className="dg-ai-race__metrics"><span>Vision <b>{room.aiActivity.visionMs === null ? '…' : `${(room.aiActivity.visionMs / 1000).toFixed(1)}s`}</b></span><span>Video <b>{room.aiActivity.generationMs === null ? room.aiPhase === 'generating' ? 'LIVE' : '—' : `${(room.aiActivity.generationMs / 1000).toFixed(1)}s`}</b></span><span>Verify <b>{room.aiActivity.verificationMs === null ? room.aiPhase === 'verifying' ? 'LIVE' : '—' : `${(room.aiActivity.verificationMs / 1000).toFixed(1)}s`}</b></span></div>}<div className="dg-ai-race__proof-slot" ref={setProofPortal}>{!isHost && <SharedFastH3Video track={remoteFastH3Track} active={aiVideoActive} />}</div>{proofNote && <p className="dg-ai-race__note">{proofNote}</p>}</aside> : <div className={`dg-ai-card is-${room.aiPhase}`}><div><span>✦</span><strong>FASTH3 · AI</strong></div><p>{room.aiEnabled ? room.aiPhase === 'watching' ? 'Watching the drawing and preparing guesses.' : room.aiPhase === 'thinking' ? 'Reading the latest strokes…' : room.aiPhase === 'generating' ? `Generating video proof for “${room.aiActivity?.guess ?? 'its guess'}”…` : room.aiPhase === 'verifying' ? 'OpenAI is checking the generated video…' : room.aiPhase === 'verified' ? 'Proof accepted.' : room.aiPhase === 'failed' ? 'Proof unavailable. Humans can keep guessing.' : room.aiPhase : 'Not invited to this room.'}</p></div>}{!waitingForPlayers && !isArtist && room.phase === 'drawing' && secondsLeft > 0 && <div className="dg-guess-input"><input value={guess} onChange={(event) => setGuess(event.target.value)} placeholder="Type your guess…" maxLength={80} onKeyDown={(event) => { if (event.key === 'Enter') void submitGuess() }} /><button onClick={() => void submitGuess()}>↑</button></div>}{!waitingForPlayers && !isArtist && room.phase === 'drawing' && secondsLeft === 0 && <p className="dg-settling">Time’s up — settling the round…</p>}</aside>
+          <aside className="dg-panel dg-chat-panel"><div className="dg-panel-title"><span>GUESSES</span><strong>{room.messages.length}</strong></div><div className="dg-chat-log">{room.messages.length === 0 && <p className="dg-empty">No guesses yet. Watch the drawing!</p>}{room.messages.map((message) => <div className={`dg-chat-message is-${message.correctness}`} key={message.id}><strong>{message.source === 'ai' ? '✦ FastH3' : playerName(room, message.playerId)}</strong><span>{message.content}</span>{message.correctness === 'close' && <em>Close!</em>}</div>)}</div>{room.aiEnabled && room.phase === 'drawing' ? <aside className={`dg-ai-race dg-ai-race--sidebar is-${room.aiPhase}`} aria-live="polite"><div className="dg-ai-race__head"><span className="dg-ai-race__orb">✦</span><div><b>FASTH3 · SHARED LIVE</b><strong>{waitingForPlayers ? 'PAUSED FOR PLAYERS' : aiStage}</strong></div>{aiElapsedMs !== null && <time><small>TOTAL</small>{(aiElapsedMs / 1000).toFixed(1)}s</time>}</div>{room.aiActivity && <div className="dg-ai-race__candidate"><span>CURRENT IDEA · EVERY PLAYER</span><strong>“{room.aiActivity.guess}”</strong><small>{Math.round(room.aiActivity.confidence * 100)}% confidence · {room.aiActivity.reason}</small></div>}<div className="dg-ai-race__track"><i /></div>{room.aiActivity && <div className="dg-ai-race__metrics"><span>Vision <b>{room.aiActivity.visionMs === null ? '…' : `${(room.aiActivity.visionMs / 1000).toFixed(1)}s`}</b></span><span>Video <b>{room.aiActivity.generationMs === null ? room.aiPhase === 'generating' ? 'LIVE' : '—' : `${(room.aiActivity.generationMs / 1000).toFixed(1)}s`}</b></span><span>Verify <b>{room.aiActivity.verificationMs === null ? room.aiPhase === 'verifying' ? 'LIVE' : '—' : `${(room.aiActivity.verificationMs / 1000).toFixed(1)}s`}</b></span></div>}<div className="dg-ai-race__proof-slot" ref={setProofPortal}>{!isHost && <SharedFastH3Video track={remoteFastH3Track} active={aiVideoActive} freeze={room.aiPhase === 'verifying'} />}</div>{proofNote && <p className="dg-ai-race__note">{proofNote}</p>}</aside> : <div className={`dg-ai-card is-${room.aiPhase}`}><div><span>✦</span><strong>FASTH3 · AI</strong></div><p>{room.aiEnabled ? room.aiPhase === 'watching' ? 'Watching the drawing and preparing guesses.' : room.aiPhase === 'thinking' ? 'Reading the latest strokes…' : room.aiPhase === 'generating' ? `Generating video proof for “${room.aiActivity?.guess ?? 'its guess'}”…` : room.aiPhase === 'verifying' ? 'Checking whether the generated video matches…' : room.aiPhase === 'verified' ? 'Proof accepted.' : room.aiPhase === 'failed' ? 'Proof unavailable. Humans can keep guessing.' : room.aiPhase : 'Not invited to this room.'}</p></div>}{!waitingForPlayers && !isArtist && room.phase === 'drawing' && secondsLeft > 0 && <div className="dg-guess-input"><input value={guess} onChange={(event) => setGuess(event.target.value)} placeholder="Type your guess…" maxLength={80} onKeyDown={(event) => { if (event.key === 'Enter') void submitGuess() }} /><button onClick={() => void submitGuess()}>↑</button></div>}{!waitingForPlayers && !isArtist && room.phase === 'drawing' && secondsLeft === 0 && <p className="dg-settling">Time’s up — settling the round…</p>}</aside>
         </section>
       )}
 

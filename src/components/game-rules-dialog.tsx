@@ -35,8 +35,8 @@ export function GameRulesDialog({ open, onClose }: { open: boolean; onClose: () 
             <h3>FastH3 has to prove it</h3>
             <ul>
               <li>FastH3 sees periodic snapshots, never the secret word.</li>
-              <li>Every new FastH3 idea immediately starts a video attempt.</li>
-              <li>OpenAI checks three frames from the generated proof.</li>
+              <li>Only a correct FastH3 guess starts a video proof attempt.</li>
+              <li>An independent vision check confirms that the generated video matches.</li>
               <li>FastH3 wins only when its text guess is correct and its matching video proof passes.</li>
               <li>A verified FastH3 win scores points for FastH3 and assist points for the artist.</li>
               <li>Humans keep guessing while FastH3 generates.</li>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { FastH3MainVideoView, FastH3Provider, useFastH3, useFastH3ClipFailed, useFastH3ClipFinished, useFastH3ClipStarted, useFastH3Track } from '@reactor-models/fast-h3'
+import { startVideoLoopRecording, type VideoLoopRecording } from '#/lib/video-loop'
 
 function captureFrame(video: HTMLVideoElement) {
   const canvas = document.createElement('canvas')
@@ -29,9 +30,23 @@ function ProofController({ job, portalTarget, onReady, onError, onVideoTrack }: 
   const onErrorRef = useRef(onError)
   const queuedRef = useRef<string | null>(null)
   const framesRef = useRef<Promise<string[]> | null>(null)
+  const recordingRef = useRef<VideoLoopRecording | null>(null)
   const requestedAtRef = useRef<number | null>(null)
   const [label, setLabel] = useState('Connecting to Fast H3…')
+  const [posterFrame, setPosterFrame] = useState<string | null>(null)
+  const [loopUrl, setLoopUrl] = useState<string | null>(null)
   useEffect(() => { onErrorRef.current = onError }, [onError])
+  useEffect(() => {
+    recordingRef.current?.cancel()
+    recordingRef.current = null
+    setPosterFrame(null)
+    setLoopUrl((current) => { if (current) URL.revokeObjectURL(current); return null })
+    framesRef.current = null
+  }, [job?.attemptId])
+  useEffect(() => () => {
+    recordingRef.current?.cancel()
+    if (loopUrl) URL.revokeObjectURL(loopUrl)
+  }, [loopUrl])
   useEffect(() => {
     void connect().catch((error) => onErrorRef.current(error instanceof Error ? error.message : 'Fast H3 could not connect'))
     return () => { void disconnect() }
@@ -59,6 +74,8 @@ function ProofController({ job, portalTarget, onReady, onError, onVideoTrack }: 
   useFastH3ClipStarted(() => {
     const video = rootRef.current?.querySelector('video')
     if (!video) { onError('Fast H3 started without a playable video'); return }
+    recordingRef.current?.cancel()
+    recordingRef.current = videoTrack ? startVideoLoopRecording(videoTrack) : null
     framesRef.current = (async () => {
       const frames: string[] = []
       for (const delay of [650, 1_650, 1_650]) {
@@ -77,15 +94,24 @@ function ProofController({ job, portalTarget, onReady, onError, onVideoTrack }: 
       try {
         const frames = await framesRef.current
         if (frames.length !== 3) return
-        setLabel('Proof video ready. Verifying…')
+        const recording = recordingRef.current
+        recordingRef.current = null
+        const recordingBlob = await recording?.stop()
+        if (recordingBlob) setLoopUrl(URL.createObjectURL(recordingBlob))
+        setPosterFrame(frames.at(-1) ?? null)
+        setLabel('Checking video proof…')
         onReady(frames, { generationMs: requestedAtRef.current ? Date.now() - requestedAtRef.current : 0 })
       } catch (error) {
         onError(error instanceof Error ? error.message : 'Fast H3 frames could not be captured')
       }
     })()
   })
-  useFastH3ClipFailed((message) => onError(message.reason || 'Fast H3 could not generate this proof', requestedAtRef.current ? { generationMs: Date.now() - requestedAtRef.current } : undefined))
-  const view = <div className={`dg-proof ${job ? 'is-active' : 'is-idle'} ${portalTarget ? '' : 'is-prewarming'}`} ref={rootRef}><div className="dg-proof__stage"><span className="dg-proof__scan" /><FastH3MainVideoView muted /></div><small><i />{label}</small></div>
+  useFastH3ClipFailed((message) => {
+    recordingRef.current?.cancel()
+    recordingRef.current = null
+    onError(message.reason || 'Fast H3 could not generate this proof', requestedAtRef.current ? { generationMs: Date.now() - requestedAtRef.current } : undefined)
+  })
+  const view = <div className={`dg-proof ${job ? 'is-active' : 'is-idle'} ${portalTarget ? '' : 'is-prewarming'}`} ref={rootRef}><div className="dg-proof__stage"><span className="dg-proof__scan" /><FastH3MainVideoView muted />{loopUrl ? <video className="dg-proof__loop" src={loopUrl} autoPlay loop muted playsInline /> : posterFrame && <img className="dg-proof__poster" src={posterFrame} alt="Last frame from the generated FastH3 proof" />}</div><small><i />{label}</small></div>
   return portalTarget ? createPortal(view, portalTarget) : view
 }
 

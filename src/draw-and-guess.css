@@ -365,6 +365,8 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 4px solid 
 .dg-proof.is-idle > small i { background: var(--mint); }
 .dg-proof__stage { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border: 2px solid var(--ink); border-radius: 9px 6px; background: #111; }
 .dg-proof__stage video { width: 100%; height: 100%; object-fit: cover; }
+.dg-proof__poster { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.dg-proof__loop { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .dg-proof__waiting { position: absolute; inset: 0; display: grid; place-items: center; padding: 18px; color: #cbd4dc; text-align: center; font: 800 10px/1.35 "IBM Plex Mono", monospace; }
 .dg-proof__live-badge { position: absolute; z-index: 3; top: 7px; right: 7px; padding: 4px 6px; border: 1.5px solid var(--ink); border-radius: 5px; background: var(--mint); color: var(--ink); font: 900 7px/1 "IBM Plex Mono", monospace; letter-spacing: .05em; }
 .dg-proof--shared.is-idle .dg-proof__live-badge { display: none; }

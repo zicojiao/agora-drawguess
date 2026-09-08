@@ -30,7 +30,8 @@ export const Route = createFileRoute('/api/game/rooms/$roomId/ai-guess')({
           if (!round || round.winner_id || Date.now() > round.ends_at) return json({ error: 'That drawing turn is already settled.' }, { status: 409 })
           const claimed = await workerEnv.DB.prepare(`UPDATE game_rooms SET ai_phase = 'thinking' WHERE id = ? AND ai_phase = 'watching'`).bind(room.id).run()
           if (claimed.meta.changes !== 1) return json({ error: 'FastH3 is already handling the latest drawing.' }, { status: 409 })
-          const earlier = await workerEnv.DB.prepare(`SELECT guess FROM ai_proof_attempts WHERE round_id = ? ORDER BY created_at ASC LIMIT 8`)
+          const earlier = await workerEnv.DB.prepare(`SELECT content AS guess FROM game_guesses
+            WHERE round_id = ? AND source = 'ai' ORDER BY created_at DESC LIMIT 8`)
             .bind(round.id).all<{ guess: string }>()
           const visionStartedAt = Date.now()
           const guess = await guessDrawing(workerEnv, body.image, (earlier.results ?? []).map(({ guess: value }) => value))
@@ -41,6 +42,10 @@ export const Route = createFileRoute('/api/game/rooms/$roomId/ai-guess')({
             (id, room_id, round_id, player_id, source, content, normalized, correctness, created_at)
             VALUES (?, ?, ?, NULL, 'ai', ?, ?, ?, ?)`)
             .bind(crypto.randomUUID().replaceAll('-', ''), room.id, round.id, guess.guess, normalizeGuess(guess.guess), correct ? 'correct' : 'wrong', now).run()
+          if (!correct) {
+            await workerEnv.DB.prepare(`UPDATE game_rooms SET ai_phase = 'watching' WHERE id = ?`).bind(room.id).run()
+            return json({ guess, correct: false })
+          }
           const duplicate = await workerEnv.DB.prepare('SELECT id FROM ai_proof_attempts WHERE round_id = ? AND lower(guess) = lower(?) LIMIT 1')
             .bind(round.id, guess.guess).first<{ id: string }>()
           if (duplicate) {
