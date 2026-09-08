@@ -9,12 +9,10 @@
 A realtime multiplayer drawing game where the AI challenger only wins after it
 guesses the sketch and generates matching video proof.
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-099DFD)](./LICENSE)
 ![Realtime](https://img.shields.io/badge/realtime-Agora%20RTC%20%2B%20RTM-099DFD)
 ![Whiteboard](https://img.shields.io/badge/canvas-Agora%20Whiteboard-FFCA28)
 ![AI](https://img.shields.io/badge/AI-OpenAI%20Vision-111827)
-![Proof](https://img.shields.io/badge/proof-FastH3-7C3AED)
-![Runtime](https://img.shields.io/badge/runtime-Cloudflare%20Workers-F38020)
+![AI](https://img.shields.io/badge/proof-FastH3-7C3AED)
 
 **English** · [简体中文](./README.zh-CN.md)
 
@@ -121,7 +119,7 @@ boundaries, and fallback behavior.
 ### 1. Install
 
 ```bash
-git clone https://github.com/zicojiao/soundoff.git draw-and-guess
+git clone https://github.com/zicojiao/agora-drawguess.git draw-and-guess
 cd draw-and-guess
 pnpm install
 cp .env.example .env.local
@@ -223,7 +221,7 @@ restricted to one `reactor/fast-h3` session.
 
 During a drawing round:
 
-1. The active artist's browser samples the shared Whiteboard only after visible
+1. The room host's browser samples the shared Whiteboard only after visible
    strokes exist.
 2. The Worker asks the configured vision model for a concrete guess.
 3. A correct guess starts a five-second FastH3 proof clip in the host browser.
@@ -231,6 +229,8 @@ During a drawing round:
    players can see it.
 5. Three sampled frames return to the Worker for independent visual verification.
 6. FastH3 wins only when that verification passes.
+
+While verification runs, the completed proof clip loops locally for each viewer.
 
 The Reactor API key is stored in the host's browser storage for convenience.
 Use a limited key, clear site storage on shared devices, and never commit the key.
@@ -289,51 +289,6 @@ pnpm deploy
 | `pnpm db:migrate:local` | Apply D1 migrations locally |
 | `pnpm db:migrate:remote` | Apply D1 migrations to the configured remote DB |
 | `pnpm deploy` | Build and deploy with Wrangler |
-
-## Project Structure
-
-```text
-src/
-  components/       Home, room, whiteboard, dialogs, FastH3 proof UI
-  lib/agora/        RTC + RTM browser session and media cleanup
-  lib/game/         Game model, lifecycle, audio cues, whiteboard helpers
-  lib/server/       Authoritative game state, tokens, vision, rate limiting
-  lib/seo/          Canonical-origin handling
-  routes/           Pages and room API endpoints
-migrations/         Fresh D1 schema
-public/             Icons, social image, hero art, manifest, SEO files
-scripts/            FastH3 browser-WASM asset synchronization
-docs/               Architecture and trust-boundary documentation
-```
-
-## Security
-
-- Seat tokens are random, stored per tab, and hashed before D1 storage.
-- Agora App Certificate, Whiteboard secret, and vision API key stay server-side.
-- Agora and Whiteboard credentials issued to clients are short-lived and scoped.
-- Room APIs validate seat ownership and use D1 primary sessions for
-  read-after-write consistency.
-- Public create-room requests are rate-limited by coarse network identity.
-- Drawing and proof images are restricted to bounded data-image formats.
-- Host-provided Reactor keys go directly to Reactor and are not logged or sent to
-  PostHog by this app.
-
-Read [SECURITY.md](./SECURITY.md) before operating a public deployment.
-
-## Known Limitations
-
-- This is a focused demo, not a moderation-complete public drawing platform.
-- Authoritative room state is polled from D1; RTM accelerates refreshes but is not
-  the source of truth.
-- FastH3 generation runs in the host browser, so the host tab must stay online.
-- If Agora Whiteboard is unavailable, the fallback canvas is local and is not
-  synchronized across players.
-- Automated guesses and visual verification can still be wrong.
-
-## Contributing
-
-Issues and pull requests are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md)
-for the required checks and credential-safety rules.
 
 ## License
 

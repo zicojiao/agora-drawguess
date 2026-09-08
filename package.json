@@ -11,11 +11,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zicojiao/soundoff.git"
+    "url": "git+https://github.com/zicojiao/agora-drawguess.git"
   },
   "homepage": "https://drawguess.app",
   "bugs": {
-    "url": "https://github.com/zicojiao/soundoff/issues"
+    "url": "https://github.com/zicojiao/agora-drawguess/issues"
   },
   "scripts": {
     "dev": "pnpm sync:reactor-wasm && vite dev --port 3000",
