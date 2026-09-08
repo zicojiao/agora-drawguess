@@ -27,6 +27,12 @@ FastH3 的获胜条件比人类更严格：正确猜词只是第一步。它还�
 
 ![Draw & Guess 多人游戏与 FastH3 视频证明](./public/og-draw-and-guess.png)
 
+## 演示
+
+这段完整录屏展示了从创建房间、与朋友实时作画，到 FastH3 猜图并生成视频证明的游戏流程：
+
+https://github.com/user-attachments/assets/32cb9c77-3593-4bc1-8108-54c7562efb2f
+
 ## 架构
 
 ```mermaid

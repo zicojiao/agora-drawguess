@@ -32,6 +32,13 @@ an independent vision pass must verify that proof before the AI receives the win
 
 ![Draw & Guess multiplayer game with FastH3 video proof](./public/og-draw-and-guess.png)
 
+## Demo
+
+Watch a complete Draw & Guess game, from creating a room and drawing with
+friends to FastH3 guessing the sketch and generating video proof:
+
+https://github.com/user-attachments/assets/32cb9c77-3593-4bc1-8108-54c7562efb2f
+
 ## Architecture
 
 ```mermaid
