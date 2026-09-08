@@ -1,0 +1,64 @@
+{
+  "name": "draw-and-guess",
+  "version": "0.1.0",
+  "description": "A realtime multiplayer drawing game where FastH3 must guess and generate video proof to win.",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@11.6.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zicojiao/soundoff.git"
+  },
+  "homepage": "https://drawguess.app",
+  "bugs": {
+    "url": "https://github.com/zicojiao/soundoff/issues"
+  },
+  "scripts": {
+    "dev": "pnpm sync:reactor-wasm && vite dev --port 3000",
+    "generate-routes": "tsr generate",
+    "build": "pnpm sync:reactor-wasm && vite build",
+    "sync:reactor-wasm": "node scripts/sync-reactor-wasm.mjs",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "cf-typegen": "wrangler types",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "deploy": "pnpm run build && wrangler deploy"
+  },
+  "dependencies": {
+    "@posthog/react": "^1.10.4",
+    "@reactor-models/fast-h3": "1.0.2",
+    "@tanstack/react-router": "latest",
+    "@tanstack/react-start": "latest",
+    "agora-rtc-sdk-ng": "^4.24.8",
+    "agora-rtm": "^2.3.0",
+    "agora-token": "^2.0.5",
+    "netless-token": "1.0.2",
+    "posthog-js": "^1.418.10",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "regenerator-runtime": "0.14.1",
+    "sonner": "^2.0.8",
+    "white-web-sdk": "^2.16.58"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.26.0",
+    "@cloudflare/workers-types": "5.20260823.1",
+    "@reactor-team/js-sdk": "3.0.0",
+    "@tanstack/router-cli": "^1.132.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.1",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.0",
+    "vitest": "^4.0.18",
+    "wrangler": "^4.70.0"
+  }
+}

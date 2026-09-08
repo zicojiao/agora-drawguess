@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <clipPath id="logo-clip"><rect x="54" y="45" width="82" height="82" rx="22"/></clipPath>
+  </defs>
+  <rect width="1200" height="630" fill="#eef8ff"/>
+  <circle cx="1080" cy="570" r="260" fill="#ffd84d" opacity=".38"/>
+  <path d="M0 500C150 430 252 470 340 630H0Z" fill="#099dfd" opacity=".13"/>
+
+  <rect x="60" y="51" width="82" height="82" rx="22" fill="#171a1f"/>
+  <g clip-path="url(#logo-clip)">
+    <rect x="54" y="45" width="82" height="82" fill="#ffd84d"/>
+    <text x="76" y="113" fill="#171a1f" font-family="Arial Black, Arial, sans-serif" font-size="70" font-weight="900">?</text>
+    <path d="m69 56 3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="#099dfd" stroke="#171a1f" stroke-width="2"/>
+  </g>
+  <rect x="54" y="45" width="82" height="82" rx="22" fill="none" stroke="#171a1f" stroke-width="5"/>
+  <text x="158" y="82" fill="#171a1f" font-family="Arial Black, Arial, sans-serif" font-size="28" font-weight="900">DRAW</text>
+  <text x="158" y="114" fill="#171a1f" font-family="Arial Black, Arial, sans-serif" font-size="28" font-weight="900">&amp; GUESS</text>
+
+  <text x="54" y="231" fill="#171a1f" font-family="Arial Black, Arial, sans-serif" font-size="64" font-weight="900">DRAW IT.</text>
+  <text x="54" y="307" fill="#099dfd" stroke="#171a1f" stroke-width="2" paint-order="stroke" font-family="Arial Black, Arial, sans-serif" font-size="64" font-weight="900">GUESS IT.</text>
+  <text x="54" y="383" fill="#171a1f" font-family="Arial Black, Arial, sans-serif" font-size="58" font-weight="900">BEAT FASTH3.</text>
+  <text x="57" y="431" fill="#515966" font-family="Arial, sans-serif" font-size="19" font-weight="700" letter-spacing="1.5">LIVE DRAWING · HUMAN VS AI</text>
+
+  <rect x="580" y="118" width="574" height="383" rx="28" fill="#099dfd" stroke="#171a1f" stroke-width="5"/>
+  <rect x="574" y="109" width="574" height="383" rx="28" fill="#fffdf7"/>
+  <text x="607" y="150" fill="#171a1f" font-family="Arial, sans-serif" font-size="17" font-weight="900">ROUND 2 / 3</text>
+  <rect x="1030" y="126" width="88" height="39" rx="15" fill="#ffd84d" stroke="#171a1f" stroke-width="4"/>
+  <text x="1074" y="152" text-anchor="middle" fill="#171a1f" font-family="Arial, sans-serif" font-size="18" font-weight="900">00:42</text>
+  <path d="M760 181h28m18 0h28m18 0h28m18 0h28" stroke="#171a1f" stroke-width="6" stroke-linecap="round"/>
+
+  <path d="M764 289l14-58 39 27q33-17 66 0l38-27 15 58q9 15 5 34-7 42-89 42t-89-42q-4-19 1-34z" fill="#fffdf7" stroke="#171a1f" stroke-width="6" stroke-linejoin="round"/>
+  <ellipse cx="852" cy="405" rx="58" ry="66" fill="#fffdf7" stroke="#171a1f" stroke-width="6"/>
+  <circle cx="821" cy="305" r="7" fill="#171a1f"/>
+  <circle cx="884" cy="305" r="7" fill="#171a1f"/>
+  <path d="m852 317-9 7 9 7 9-7zM852 331q-3 15-19 10m19-10q3 15 19 10M794 325l-42-7m44 19-43 7m155-19 42-7m-44 19 43 7" fill="none" stroke="#171a1f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M824 397v58m55-58v58m-71 0h31m24 0h31" stroke="#171a1f" stroke-width="6" stroke-linecap="round"/>
+
+  <g transform="rotate(-3 673 424)">
+    <rect x="594" y="397" width="164" height="55" rx="12" fill="#fffdf7" stroke="#171a1f" stroke-width="4"/>
+    <text x="676" y="431" text-anchor="middle" fill="#171a1f" font-family="Arial, sans-serif" font-size="18" font-weight="900">Maya: cat?</text>
+  </g>
+
+  <rect x="914" y="322" width="214" height="151" rx="14" fill="#171a1f" stroke="#171a1f" stroke-width="5"/>
+  <path d="M914 337q0-15 15-15h184q15 0 15 15v29H914z" fill="#ffd84d"/>
+  <text x="1021" y="351" text-anchor="middle" fill="#171a1f" font-family="Arial, sans-serif" font-size="14" font-weight="900">FASTH3 VIDEO PROOF</text>
+  <rect x="925" y="373" width="192" height="70" rx="7" fill="#dfeffc"/>
+  <path d="m986 408 11-28 17 17 18-17 11 28q0 28-28 28t-29-28z" fill="#f5a23b" stroke="#171a1f" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="1007" cy="407" r="3" fill="#171a1f"/><circle cx="1025" cy="407" r="3" fill="#171a1f"/>
+  <path d="m1016 414-5 4 5 4 5-4z" fill="#fffdf7"/>
+  <path d="m935 389 0 35 27-18z" fill="#fffdf7" stroke="#171a1f" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="926" y="451" width="177" height="8" rx="4" fill="#515966"/>
+  <rect x="926" y="451" width="110" height="8" rx="4" fill="#ffd84d"/>
+  <rect x="574" y="109" width="574" height="383" rx="28" fill="none" stroke="#171a1f" stroke-width="5"/>
+
+  <rect x="54" y="520" width="235" height="49" rx="13" fill="#fffdf7" stroke="#171a1f" stroke-width="3"/>
+  <circle cx="80" cy="544" r="13" fill="#099dfd"/>
+  <text x="103" y="551" fill="#171a1f" font-family="Arial, sans-serif" font-size="16" font-weight="800">AGORA REALTIME</text>
+  <rect x="306" y="520" width="218" height="49" rx="13" fill="#fffdf7" stroke="#171a1f" stroke-width="3"/>
+  <path d="m331 530 4 10 10 4-10 4-4 10-4-10-10-4 10-4z" fill="#ffd84d" stroke="#171a1f" stroke-width="2"/>
+  <text x="355" y="551" fill="#171a1f" font-family="Arial, sans-serif" font-size="16" font-weight="800">FASTH3 PROOF</text>
+  <text x="1148" y="564" text-anchor="end" fill="#171a1f" font-family="Arial, sans-serif" font-size="20" font-weight="800">DRAWGUESS.APP</text>
+</svg>

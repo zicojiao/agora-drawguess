@@ -1,0 +1,10 @@
+allowBuilds:
+  core-js: false
+  esbuild: true
+  lightningcss: true
+  protobufjs: true
+  sharp: true
+  workerd: true
+minimumReleaseAgeExclude:
+  - '@cloudflare/workers-types@5.20260823.1'
+  - '@reactor-models/fast-h3@1.0.2'

@@ -1,0 +1,27 @@
+# Draw & Guess
+
+> Draw & Guess is a live multiplayer drawing game where friends race an AI challenger named FastH3.
+
+## Main pages
+
+- [Home](https://drawguess.app/): Create or join a Draw & Guess room.
+- [Terms](https://drawguess.app/terms): Service and fair-play terms.
+- [Privacy](https://drawguess.app/privacy): Data, voice, whiteboard, AI, and analytics practices.
+
+## How the game works
+
+- Players draw together on a synchronized Agora Interactive Whiteboard.
+- Human players submit guesses in real time and may optionally use Agora RTC voice chat.
+- When invited, FastH3 analyzes drawing snapshots and submits its own guesses.
+- An AI win counts only when FastH3 both guesses correctly and generates matching visual proof that passes verification.
+
+## Technology
+
+- Agora RTC provides optional realtime voice.
+- Agora Interactive Whiteboard synchronizes drawings between players.
+- An OpenAI vision model interprets drawing snapshots and verifies AI proof.
+- Reactor FastH3 generates the visual proof required for the AI challenger to win.
+
+## Crawling guidance
+
+Public marketing and legal pages may be indexed. Room URLs contain ephemeral live-game state and should not be indexed. API routes are application endpoints rather than public documentation.

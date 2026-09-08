@@ -1,0 +1,9 @@
+.dg-brand__mark {
+  overflow: hidden;
+  background-color: #ffd84d;
+  background-image: url('/favicon-512x512.png');
+  background-position: center;
+  background-size: cover;
+  color: transparent;
+  font-size: 0;
+}

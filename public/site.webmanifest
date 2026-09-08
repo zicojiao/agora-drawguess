@@ -1,0 +1,22 @@
+{
+  "name": "Draw & Guess",
+  "short_name": "Draw & Guess",
+  "description": "A live multiplayer drawing game with FastH3 as the AI challenger.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fffdf7",
+  "theme_color": "#ffd84d",
+  "icons": [
+    {
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

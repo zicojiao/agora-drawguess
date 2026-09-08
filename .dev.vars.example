@@ -1,0 +1,14 @@
+# Server-only development credentials. Copy to .dev.vars; never commit real values.
+AGORA_APP_ID=
+AGORA_APP_CERTIFICATE=
+AGORA_WHITEBOARD_APP_IDENTIFIER=
+AGORA_WHITEBOARD_ACCESS_KEY=
+AGORA_WHITEBOARD_SECRET_KEY=
+AGORA_WHITEBOARD_REGION=us-sv
+
+# Optional development fallback. Prefer Whiteboard AK/SK in production.
+AGORA_WHITEBOARD_SDK_TOKEN=
+
+OPENAI_API_KEY=
+AI_API_BASE_URL=https://api.openai.com/v1
+OPENAI_VISION_MODEL=gpt-5.4-mini

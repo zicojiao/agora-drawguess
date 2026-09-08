@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Draw and Guess app icon</title>
+  <rect width="512" height="512" fill="#ffd84d"/>
+  <path d="M151 195c0-69 56-119 130-112 69 6 109 53 99 111-8 46-42 72-79 101-40 31-65 62-65 111"
+        fill="none" stroke="#171a1f" stroke-width="62" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="235" cy="446" r="31" fill="#171a1f"/>
+  <path d="m118 90 10 27 27 10-27 10-10 27-10-27-27-10 27-10z"
+        fill="#099dfd" stroke="#171a1f" stroke-width="10" stroke-linejoin="round"/>
+  <g transform="rotate(43 354 342)">
+    <rect x="321" y="251" width="66" height="162" rx="18" fill="#fffdf7" stroke="#171a1f" stroke-width="14"/>
+    <path d="M321 379h66l-33 69z" fill="#fffdf7" stroke="#171a1f" stroke-width="14" stroke-linejoin="round"/>
+    <path d="M329 286h50" fill="none" stroke="#171a1f" stroke-width="12"/>
+  </g>
+</svg>

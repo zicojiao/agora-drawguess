@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "draw-and-guess",
+  "compatibility_date": "2026-08-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "workers_dev": true,
+  "observability": { "enabled": true },
+  "vars": {
+    "AGORA_APP_ID": "replace-with-your-agora-app-id",
+    "AGORA_WHITEBOARD_APP_IDENTIFIER": "replace-with-your-whiteboard-app-identifier",
+    "AI_API_BASE_URL": "https://api.openai.com/v1",
+    "OPENAI_VISION_MODEL": "gpt-5.4-mini",
+    "AGORA_WHITEBOARD_REGION": "us-sv"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "draw-and-guess-db",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ]
+}
